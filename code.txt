@@ -1,0 +1,104 @@
+package project2;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.util.Date;
+
+public class second {
+
+public static void main(String[] args)
+{
+// TODO Auto-generated method stub
+Connection conn=null;
+Statement stmt=null;
+ResultSet rs=null;
+try
+{
+Class.forName("com.mysql.cj.jdbc.Driver");
+conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/transcation","root","Rekha123456#");
+
+String sql="select sum(trans_amt) from fund";
+stmt=conn.createStatement();
+rs=stmt.executeQuery(sql);
+int totalBal=0;
+if(rs.next())
+{
+	totalBal=rs.getInt(1);
+  System.out.println("Total balance--->"+totalBal);	
+}
+
+sql="select * from transaction_details order by trans_date desc limit 5;";
+stmt=conn.createStatement();
+rs=stmt.executeQuery(sql);
+int total=0;
+while(rs.next())
+{
+System.out.println(rs.getInt("trans_amt"));
+total=total+rs.getInt("trans_amt");
+}
+
+System.out.println("Last 5 transactions amount-->"+total);
+
+System.out.println("Total account balance-->"+(totalBal-total));
+}
+catch(Exception e)
+{
+System.out.println(e);
+}
+
+finally
+{
+	try {
+		conn.close();
+	} catch (SQLException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+}
+
+fundtransfer(1001,1002,100,65789,78564);
+
+
+}
+public static void fundtransfer(int fcustid,int tcustid,int amount,int factno,int tactno)
+{
+	// TODO Auto-generated method stub
+	Connection conn=null;
+	Statement stmt=null;
+	ResultSet rs=null;
+	try
+	{
+	Class.forName("com.mysql.cj.jdbc.Driver");
+	conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/transcation","root","Rekha123456#");
+
+	String sql="update fund set trans_amt=trans_amt-"+amount+" where cus_id="+fcustid;
+	stmt=conn.createStatement();
+	int res=stmt.executeUpdate(sql);
+	
+	sql="update fund set trans_amt=trans_amt+"+amount+" where cus_id="+tcustid;
+	stmt=conn.createStatement();
+	res=stmt.executeUpdate(sql);
+	Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+	sql="insert into transaction_details (cus_id,trans_amt,trans_date,account,trans_type) values ("+fcustid+","+amount+",'"+timestamp+"',"+factno+",'dr')";
+	stmt=conn.createStatement();
+	res=stmt.executeUpdate(sql);
+	
+	sql="insert into transaction_details (cus_id,trans_amt,trans_date,account,trans_type) values ("+tcustid+","+amount+",'"+timestamp+"',"+tactno+",'cr')";
+	stmt=conn.createStatement();
+	res=stmt.executeUpdate(sql);
+	
+	
+	}
+	catch(Exception e)
+	{
+		System.out.println(e);
+	}
+	
+}
+}
+
+
